@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CFB Schedule Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: #0d1117;
+            color: #fff;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+        
+        /* Stadium lights effect */
+        .lights {
+            position: fixed;
+            top: -50%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200%;
+            height: 100%;
+            background: radial-gradient(ellipse at center top, rgba(255,200,50,0.15) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        /* Field lines background */
+        .field-bg {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 40%;
+            background: linear-gradient(to bottom, transparent 0%, rgba(34,139,34,0.1) 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .field-lines {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 200px;
+            opacity: 0.05;
+            background-image: repeating-linear-gradient(
+                90deg,
+                transparent,
+                transparent calc(10% - 2px),
+                #fff calc(10% - 2px),
+                #fff 10%
+            );
+            pointer-events: none;
+        }
+        
+        .container {
+            max-width: 700px;
+            margin: 0 auto;
+            padding: 40px 20px;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Hero */
+        .hero {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+        
+        .logo {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 4rem;
+            letter-spacing: 4px;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7c815 50%, #ff6b35 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 60px rgba(247,200,21,0.3);
+            margin-bottom: 8px;
+        }
+        
+        .tagline {
+            font-size: 1.3rem;
+            color: #8b949e;
+            font-weight: 400;
+        }
+        
+        .auto-badge {
+            display: inline-block;
+            background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-top: 20px;
+            letter-spacing: 0.5px;
+        }
+        
+        /* How it works */
+        .section-title {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 2rem;
+            letter-spacing: 2px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 28px;
+            background: linear-gradient(to bottom, #ff6b35, #f7c815);
+            border-radius: 2px;
+        }
+        
+        /* Steps */
+        .steps-card {
+            background: linear-gradient(135deg, #161b22 0%, #1c2128 100%);
+            border: 1px solid #30363d;
+            border-radius: 16px;
+            padding: 32px;
+            margin-bottom: 32px;
+        }
+        
+        .step {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 28px;
+        }
+        
+        .step:last-child {
+            margin-bottom: 0;
+        }
+        
+        .step-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, #ff6b35 0%, #f7c815 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.8rem;
+            color: #000;
+            flex-shrink: 0;
+            margin-right: 20px;
+        }
+        
+        .step-content h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #fff;
+        }
+        
+        .step-content p {
+            color: #8b949e;
+            line-height: 1.5;
+            font-size: 0.95rem;
+        }
+        
+        .step-content strong {
+            color: #f7c815;
+        }
+        
+        /* Calendars */
+        .calendars-grid {
+            display: grid;
+            gap: 12px;
+            margin-bottom: 32px;
+        }
+        
+        .calendar-card {
+            background: linear-gradient(135deg, #161b22 0%, #1c2128 100%);
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 20px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-card:hover {
+            border-color: #f7c815;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(247,200,21,0.1);
+        }
+        
+        .calendar-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .conf-logo {
+            width: 48px;
+            height: 48px;
+            background: #21262d;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.1rem;
+            color: #fff;
+            letter-spacing: 1px;
+        }
+        
+        .conf-logo.sec { background: linear-gradient(135deg, #002244 0%, #003366 100%); }
+        .conf-logo.b1g { background: linear-gradient(135deg, #0033a0 0%, #0044cc 100%); }
+        .conf-logo.acc { background: linear-gradient(135deg, #013ca6 0%, #0155ce 100%); }
+        .conf-logo.b12 { background: linear-gradient(135deg, #004b87 0%, #006bb8 100%); }
+        .conf-logo.all { background: linear-gradient(135deg, #ff6b35 0%, #f7c815 100%); color: #000; }
+        
+        .conf-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin-bottom: 2px;
+        }
+        
+        .conf-full {
+            color: #8b949e;
+            font-size: 0.85rem;
+        }
+        
+        .copy-btn {
+            background: linear-gradient(135deg, #238636 0%, #2ea043 100%);
+            border: none;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+        
+        .copy-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 20px rgba(46,160,67,0.4);
+        }
+        
+        .copy-btn.copied {
+            background: linear-gradient(135deg, #f7c815 0%, #ff6b35 100%);
+            color: #000;
+        }
+        
+        /* Info box */
+        .info-box {
+            background: linear-gradient(135deg, rgba(35,134,54,0.1) 0%, rgba(46,160,67,0.05) 100%);
+            border: 1px solid rgba(46,160,67,0.3);
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .info-box h3 {
+            font-family: 'Bebas Neue', sans-serif;
+            font-size: 1.5rem;
+            letter-spacing: 1px;
+            color: #2ea043;
+            margin-bottom: 8px;
+        }
+        
+        .info-box p {
+            color: #8b949e;
+            line-height: 1.6;
+        }
+        
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+            border-top: 1px solid #21262d;
+            color: #484f58;
+            font-size: 0.9rem;
+        }
+        
+        .footer a {
+            color: #8b949e;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+        
+        .footer a:hover {
+            color: #f7c815;
+        }
+        
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 12px;
+        }
+        
+        /* Mobile */
+        @media (max-width: 600px) {
+            .logo {
+                font-size: 2.8rem;
+            }
+            
+            .tagline {
+                font-size: 1.1rem;
+            }
+            
+            .calendar-card {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+            
+            .calendar-info {
+                flex-direction: column;
+            }
+            
+            .copy-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="lights"></div>
+    <div class="field-bg"></div>
+    <div class="field-lines"></div>
+    
+    <div class="container">
+        <div class="hero">
+            <div class="logo">CFB SCHEDULE TRACKER</div>
+            <p class="tagline">Every game. On your calendar. Automatically.</p>
+            <div class="auto-badge">UPDATES DAILY - SET IT AND FORGET IT</div>
+        </div>
+        
+        <h2 class="section-title">HOW IT WORKS</h2>
+        
+        <div class="steps-card">
+            <div class="step">
+                <div class="step-icon">1</div>
+                <div class="step-content">
+                    <h3>Open Google Calendar</h3>
+                    <p>Go to <strong>calendar.google.com</strong> on your computer</p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-icon">2</div>
+                <div class="step-content">
+                    <h3>Add a new calendar</h3>
+                    <p>Find <strong>"Other calendars"</strong> on the left side. Click the <strong>+</strong> button, then click <strong>"From URL"</strong></p>
+                </div>
+            </div>
+            
+            <div class="step">
+                <div class="step-icon">3</div>
+                <div class="step-content">
+                    <h3>Paste the link</h3>
+                    <p>Pick a conference below, click <strong>"Copy Link"</strong>, paste it in Google Calendar, and hit <strong>"Add calendar"</strong></p>
+                </div>
+            </div>
+        </div>
+        
+        <h2 class="section-title">PICK YOUR CONFERENCE</h2>
+        
+        <div class="calendars-grid">
+            <div class="calendar-card">
+                <div class="calendar-info">
+                    <div class="conf-logo sec">SEC</div>
+                    <div>
+                        <div class="conf-name">SEC</div>
+                        <div class="conf-full">Southeastern Conference</div>
+                    </div>
+                </div>
+                <button class="copy-btn" onclick="copyLink('cfb_sec.ics', this)">Copy Link</button>
+            </div>
+            
+            <div class="calendar-card">
+                <div class="calendar-info">
+                    <div class="conf-logo b1g">B1G</div>
+                    <div>
+                        <div class="conf-name">Big Ten</div>
+                        <div class="conf-full">Big Ten Conference</div>
+                    </div>
+                </div>
+                <button class="copy-btn" onclick="copyLink('cfb_b1g.ics', this)">Copy Link</button>
+            </div>
+            
+            <div class="calendar-card">
+                <div class="calendar-info">
+                    <div class="conf-logo acc">ACC</div>
+                    <div>
+                        <div class="conf-name">ACC</div>
+                        <div class="conf-full">Atlantic Coast Conference</div>
+                    </div>
+                </div>
+                <button class="copy-btn" onclick="copyLink('cfb_acc.ics', this)">Copy Link</button>
+            </div>
+            
+            <div class="calendar-card">
+                <div class="calendar-info">
+                    <div class="conf-logo b12">B12</div>
+                    <div>
+                        <div class="conf-name">Big 12</div>
+                        <div class="conf-full">Big 12 Conference</div>
+                    </div>
+                </div>
+                <button class="copy-btn" onclick="copyLink('cfb_b12.ics', this)">Copy Link</button>
+            </div>
+            
+            <div class="calendar-card">
+                <div class="calendar-info">
+                    <div class="conf-logo all">ALL</div>
+                    <div>
+                        <div class="conf-name">All Conferences</div>
+                        <div class="conf-full">SEC + Big Ten + ACC + Big 12</div>
+                    </div>
+                </div>
+                <button class="copy-btn" onclick="copyLink('cfb_schedule.ics', this)">Copy Link</button>
+            </div>
+        </div>
+        
+        <div class="info-box">
+            <h3>YOU'RE DONE!</h3>
+            <p>New games, time changes, and playoff matchups appear automatically.<br>Your calendar updates itself every day. No extra work needed.</p>
+        </div>
+        
+        <div class="footer">
+            <p>Game data from CollegeFootballData.com</p>
+            <div class="footer-links">
+                <a href="https://github.com/t8s1n/cfb-schedule-tracker">GitHub</a>
+                <a href="https://collegefootballdata.com">CFBD API</a>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        function copyLink(filename, btn) {
+            const url = 'https://t8s1n.github.io/cfb-schedule-tracker/' + filename;
+            navigator.clipboard.writeText(url).then(() => {
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy Link';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+</html>
