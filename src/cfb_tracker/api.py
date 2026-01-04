@@ -78,14 +78,35 @@ class Game:
             team_lower in home_lower or home_lower in team_lower or
             team_lower in away_lower or away_lower in team_lower
         )
-    
+
     def involves_conference(self, conference: str) -> bool:
         """Check if a conference team is playing in this game."""
         conf_lower = conference.lower()
-        return (
-            (self.home_conference and self.home_conference.lower() == conf_lower) or
-            (self.away_conference and self.away_conference.lower() == conf_lower)
-        )
+
+        # Map abbreviations to possible API names
+        conf_map = {
+            "b1g": ["big ten"],
+            "b12": ["big 12"],
+            "sec": ["sec", "southeastern"],
+            "acc": ["acc", "atlantic coast"],
+            "aac": ["aac", "american athletic", "american"],
+            "pac": ["pac-12", "pac"],
+            "mwc": ["mountain west"],
+            "mac": ["mid-american"],
+            "cusa": ["conference usa"],
+            "sbc": ["sun belt"],
+            "ind": ["independent", "fbs independents"],
+        }
+
+        search_terms = conf_map.get(conf_lower, [conf_lower])
+
+        home_conf = (self.home_conference or "").lower()
+        away_conf = (self.away_conference or "").lower()
+
+        for term in search_terms:
+            if term in home_conf or term in away_conf:
+                return True
+        return False
 
 
 class CFBDClient:
