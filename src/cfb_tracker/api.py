@@ -381,15 +381,13 @@ class CFBDClient:
                         filtered.append(g)
                         break
             all_games = filtered
-        
-        # Filter by conferences if specified
-        if conferences:
-            conf_lower = [c.lower() for c in conferences]
-            all_games = [
-                g for g in all_games
-                if (g.home_conference and g.home_conference.lower() in conf_lower) or
-                   (g.away_conference and g.away_conference.lower() in conf_lower)
-            ]
+
+            # Filter by conferences if specified
+            if conferences:
+                all_games = [
+                    g for g in all_games
+                    if any(g.involves_conference(c) for c in conferences)
+                ]
         
         # Sort by date
         all_games.sort(key=lambda g: (g.start_date or datetime.max, g.week))
